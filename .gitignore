@@ -3,3 +3,6 @@
 *.pyc
 *.npy
 *.t7
+dataset/
+*.log
+.vscode
