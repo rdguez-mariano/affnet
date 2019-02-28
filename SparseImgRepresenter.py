@@ -110,7 +110,7 @@ class ScaleSpaceAffinePatchExtractor(nn.Module):
             return all_responses, aff_m_scales, pyr_idxs_scales , level_idxs_scale
         return all_responses, LAFs, final_pyr_idxs, final_level_idxs,
     
-    def getAffineShape(self, final_resp, LAFs, final_pyr_idxs, final_level_idxs, num_features = 0):
+    def getAffineShape(self, final_resp, LAFs, final_pyr_idxs, final_level_idxs, num_features = 0, verb = False):
         pe_time = 0
         affnet_time = 0
         pyr_inv_idxs = get_inverted_pyr_index(self.scale_pyr, final_pyr_idxs, final_level_idxs)
@@ -160,8 +160,9 @@ class ScaleSpaceAffinePatchExtractor(nn.Module):
         LAFs = torch.index_select(LAFs, 0, idxs)
         new_LAFs = torch.cat([torch.bmm(base_A, LAFs[:,:,0:2]),
                                LAFs[:,:,2:]], dim =2)
-        print ('affnet_time',affnet_time)
-        print ('pe_time', pe_time)
+        if verb:
+            print ('affnet_time',affnet_time)
+            print ('pe_time', pe_time)
         return final_resp, new_LAFs, final_pyr_idxs, final_level_idxs  
     
     def getOrientation(self, LAFs, final_pyr_idxs, final_level_idxs):
@@ -186,19 +187,21 @@ class ScaleSpaceAffinePatchExtractor(nn.Module):
                                                       normalizeLAFs(dLAFs, self.scale_pyr[0][0].size(3), self.scale_pyr[0][0].size(2)), 
                                                       PS = PS)
         return patches
-    def forward(self,x, do_ori = False):
+    def forward(self,x, do_ori = False, verb = False):
         ### Detection
         t = time.time()
         num_features_prefilter = self.num
         if self.num_Baum_iters > 0:
             num_features_prefilter = int(1.5 * self.num);
         responses, LAFs, final_pyr_idxs, final_level_idxs = self.multiScaleDetector(x,num_features_prefilter)
-        print (time.time() - t, 'detection multiscale')
+        if verb:
+            print (time.time() - t, 'detection multiscale')
         t = time.time()
         LAFs[:,0:2,0:2] =   self.mrSize * LAFs[:,:,0:2]
         if self.num_Baum_iters > 0:
             responses, LAFs, final_pyr_idxs, final_level_idxs  = self.getAffineShape(responses, LAFs, final_pyr_idxs, final_level_idxs, self.num)
-        print (time.time() - t, 'affine shape iters')
+        if verb:
+            print (time.time() - t, 'affine shape iters')
         t = time.time()
         if do_ori:
             LAFs = self.getOrientation(LAFs, final_pyr_idxs, final_level_idxs)
