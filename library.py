@@ -19,8 +19,10 @@ import cv2
 sys.path.append("./deep-asift/")
 
 class GTPairs(object):
-    def __init__(self,name, query,target,T):
+    def __init__(self,name, queryimg, targetimg, query,target,T):
         self.pair_name = name
+        self.queryimg = queryimg
+        self.targetimg = targetimg
         self.query = query
         self.target = target
         self.Tmatrix = T 
@@ -41,6 +43,8 @@ def LoadDatasets():
     for file in glob.glob(f.path+"/1/*"):
         f.datapairs.append( GTPairs(
             os.path.basename(file)[:-4],
+            cv2.cvtColor( cv2.imread(os.path.join(ds_path,'1',os.path.basename(file)[:-4])+'.png') ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
+            cv2.cvtColor( cv2.imread(os.path.join(ds_path,'2',os.path.basename(file)[:-4])+'.png') ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
             os.path.join(ds_path,'1',os.path.basename(file)[:-4])+'.png',
             os.path.join(ds_path,'2',os.path.basename(file)[:-4])+'.png',
             np.loadtxt(os.path.join(ds_path,'h',os.path.basename(file)[:-4]+'.txt'))
@@ -55,6 +59,8 @@ def LoadDatasets():
         for i in range(2,7):
             f.datapairs.append( GTPairs(
                 os.path.basename(tdir)+'_1_to_'+str(i),
+                cv2.cvtColor( cv2.imread(tdir+'/img1'+ext) ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
+                cv2.cvtColor( cv2.imread(tdir+'/img'+str(i)+ext) ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
                 tdir+'/img1'+ext,
                 tdir+'/img'+str(i)+ext,
                 np.loadtxt(tdir+'/H1to'+str(i)+'p')
@@ -68,6 +74,8 @@ def LoadDatasets():
         ext = glob.glob(tdir+"/01.*")[0][-4:]        
         f.datapairs.append( GTPairs(
             os.path.basename(tdir),
+            cv2.cvtColor( cv2.imread(tdir+'/01'+ext) ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
+            cv2.cvtColor( cv2.imread(tdir+'/02'+ext) ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
             tdir+'/01'+ext,
             tdir+'/02'+ext,
             np.loadtxt(tdir+'/H1to2')
@@ -80,6 +88,8 @@ def LoadDatasets():
     for file in glob.glob(f.path+"/*"):
         f.datapairs.append( GTPairs(
             os.path.basename(file)[:-4],
+            cv2.cvtColor( cv2.imread(os.path.join(ds_path+'/'+os.path.basename(file)[:-5]+'1'+os.path.basename(file)[-4:])) ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
+            cv2.cvtColor( cv2.imread(os.path.join(ds_path+'/'+os.path.basename(file)[:-5]+'2'+os.path.basename(file)[-4:])) ,cv2.COLOR_BGR2GRAY).astype(np.uint8),
             os.path.join(ds_path+'/'+os.path.basename(file)[:-5]+'1'+os.path.basename(file)[-4:]),
             os.path.join(ds_path+'/'+os.path.basename(file)[:-5]+'2'+os.path.basename(file)[-4:]),
             None
@@ -242,7 +252,7 @@ if USE_CUDA:
 def load_grayscale_var(fname):
     img = Image.open(fname).convert('RGB')
     img = np.mean(np.array(img), axis = 2)
-    var_image = torch.autograd.Variable(torch.from_numpy(img.astype(np.float32)), volatile = True)
+    var_image = torch.autograd.Variable(torch.from_numpy(img.astype(np.float32)))
     var_image_reshape = var_image.view(1, 1, var_image.size(0),var_image.size(1))
     if USE_CUDA:
         var_image_reshape = var_image_reshape.cuda()
@@ -274,12 +284,10 @@ def getCVMatches(LAFs):
     return KPlist
 
 
-def AffNet(input_img_fname1,input_img_fname2, Visual = True):
+def AffNet(input_img_fname1,input_img_fname2, Visual = True, cvimg1 = None, cvimg2 = None):
     output_img_fname = 'deep-asift/temp/kpi_match.png'
     img1 = load_grayscale_var(input_img_fname1)
     img2 = load_grayscale_var(input_img_fname2)
-    cvimg1 = cv2.cvtColor(cv2.imread(input_img_fname1),cv2.COLOR_BGR2GRAY)
-    cvimg2 = cv2.cvtColor(cv2.imread(input_img_fname2),cv2.COLOR_BGR2GRAY)
 
     start_time = time.time()
     LAFs1, descriptors1 = get_geometry_and_descriptors(img1, detector, descriptor)
@@ -312,7 +320,7 @@ def AffNet(input_img_fname1,input_img_fname2, Visual = True):
     H_sift = [[0, 0, 0], [0, 0, 0],[0, 0, 0]]
     sift_src_pts = np.float32([ KPlist1[m.queryIdx].pt for m in sift_all ]).ravel()
     sift_dst_pts = np.float32([ KPlist2[m.trainIdx].pt for m in sift_all ]).ravel()
-    matchesMask_sift, H_sift = lda.GeometricFilter(sift_src_pts, cvimg1, sift_dst_pts, cvimg2, Filter='ORSA_H')
+    matchesMask_sift, H_sift = lda.GeometricFilter(sift_src_pts, cvimg1, sift_dst_pts, cvimg2, Filter='USAC_H',verb=False)
 
     for i in range(0,len(matchesMask_sift)):
         if matchesMask_sift[i]==True:

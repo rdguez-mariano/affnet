@@ -6,3 +6,5 @@
 dataset/
 *.log
 .vscode
+cpp_libs
+deep-asift
