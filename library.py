@@ -101,6 +101,7 @@ def LoadDatasets():
     
 def CorrectMatches(matches,kplistq, kplistt, H, thres = 24):
     goodM = []
+    AvDist = 0
     for m in matches:
         x = kplistq[m.queryIdx].pt + tuple([1])
         x = np.array(x).reshape(3,1)
@@ -108,9 +109,15 @@ def CorrectMatches(matches,kplistq, kplistt, H, thres = 24):
         Hx = Hx/Hx[2]
         
         y =kplistt[m.trainIdx].pt
-        if cv2.norm(Hx[0:2],y) <= thres:
+        thisdist = cv2.norm(Hx[0:2],y)
+        if  thisdist <= thres:
             goodM.append(m)
-    return goodM
+            AvDist += thisdist
+    if len(goodM)>0:                
+        AvDist = AvDist/len(goodM)    
+    else:
+        AvDist = -1    
+    return goodM, AvDist
 
 
 def OnlyUniqueMatches(goodM, KPlistQ, KPlistT, SpatialThres=4):
