@@ -114,7 +114,7 @@ def CorrectMatches(matches,kplistq, kplistt, H, thres = 24):
             goodM.append(m)
             AvDist += thisdist
     if len(goodM)>0:                
-        AvDist = AvDist/len(goodM)    
+        AvDist = AvDist/float(len(goodM))
     else:
         AvDist = -1    
     return goodM, AvDist

@@ -15,10 +15,10 @@ class MethodScore(object):
         self.av_dist_pxls = 0
         self.ratioTruePositives = 0
     def AddInfo(self,cmHC,HC,total, AvDist):
-        if len(cmHC)>0.8*len(HC):
+        if float(len(cmHC))>0.8*float(len(HC)):
              self.score += 1
-             self.cInliers += len(cmHC)
-             self.ratioTruePositives += len(cmHC)/len(total)
+             self.cInliers += float(len(cmHC))
+             self.ratioTruePositives += float(len(cmHC))/float(len(total))
              self.av_dist_pxls += AvDist
     def GetScore(self, inStr = True):
         if inStr:
