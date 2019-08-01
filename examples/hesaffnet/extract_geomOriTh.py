@@ -1,5 +1,6 @@
 #!/usr/bin/python2 -utt
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import numpy as np
@@ -29,20 +30,20 @@ try:
     output_fname = sys.argv[2]
     th = 28.41#float(sys.argv[3])
 except:
-    print "Wrong input format. Try python hesaffnet.py imgs/cat.png cat.txt 5.3333"
+    print("Wrong input format. Try python hesaffnet.py imgs/cat.png cat.txt 5.3333")
     sys.exit(1)
 
 def get_geometry_and_descriptors(img, det,desc):
     with torch.no_grad():
         tt = time()
         LAFs, resp = det(img)
-        print('det time = ', time() - tt)
+        print(('det time = ', time() - tt))
         tt = time()
         patches = det.extract_patches_from_pyr(LAFs, PS = 32)
-        print('extract time = ', time() - tt)
+        print(('extract time = ', time() - tt))
         tt = time()
         descriptors = desc(patches)
-        print('desc time = ', time() - tt)
+        print(('desc time = ', time() - tt))
     return LAFs, descriptors
 def load_grayscale_var(fname):
     img = Image.open(fname).convert('RGB')

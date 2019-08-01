@@ -1,5 +1,6 @@
 #!/usr/bin/python2 -utt
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import numpy as np
@@ -28,7 +29,7 @@ try:
     output_fname = sys.argv[2]
     nfeats = int(sys.argv[3])
 except:
-    print "Wrong input format. Try python hesaffBaum.py imgs/cat.png cat.txt 2000"
+    print("Wrong input format. Try python hesaffBaum.py imgs/cat.png cat.txt 2000")
     sys.exit(1)
 
 img = Image.open(input_img_fname).convert('RGB')

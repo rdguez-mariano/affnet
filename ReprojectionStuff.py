@@ -1,3 +1,4 @@
+from __future__ import print_function
 import torch
 from torch.autograd import Variable
 from torch.autograd import Variable as V

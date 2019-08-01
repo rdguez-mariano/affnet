@@ -1,3 +1,4 @@
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import numpy as np
@@ -141,7 +142,7 @@ class OnePassSIR(nn.Module):
         t = time.time()
         num_features_prefilter = self.num
         responses, LAFs, final_pyr_idxs, final_level_idxs = self.multiScaleDetectorAff(x,num_features_prefilter)
-        print time.time() - t, 'detection multiscale'
+        print(time.time() - t, 'detection multiscale')
         t = time.time()
         LAFs[:,0:2,0:2] =   self.mrSize * LAFs[:,:,0:2]
         if do_ori:

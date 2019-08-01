@@ -230,7 +230,8 @@ class CPPbridge(object):
         self.MatcherPtr = self.libDA.newMatcher(k,desc_dim,sim_thres)
 
 
-USE_CUDA = True
+USE_CUDA = False
+USE_GPU = False
 
 lda = CPPbridge('./deep-asift/build/libDA.so')
 
@@ -238,9 +239,11 @@ lda = CPPbridge('./deep-asift/build/libDA.so')
 AffNetPix = AffNetFast(PS = 32)
 weightd_fname = 'pretrained/AffNet.pth'
 
-checkpoint = torch.load(weightd_fname)
+if USE_GPU:
+    checkpoint = torch.load(weightd_fname)
+else:
+    checkpoint = torch.load(weightd_fname, map_location='cpu')
 AffNetPix.load_state_dict(checkpoint['state_dict'])
-
 AffNetPix.eval()
     
 detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
@@ -248,7 +251,10 @@ detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                         AffNet = AffNetPix)
 descriptor = HardNet()
 model_weights = 'HardNet++.pth'
-hncheckpoint = torch.load(model_weights)
+if USE_GPU:
+    hncheckpoint = torch.load(model_weights)
+else:
+    hncheckpoint = torch.load(model_weights, map_location='cpu')
 descriptor.load_state_dict(hncheckpoint['state_dict'])
 descriptor.eval()
 if USE_CUDA:

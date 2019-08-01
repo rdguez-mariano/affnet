@@ -1,3 +1,4 @@
+from __future__ import print_function
 from library import *
 
 ds = LoadDatasets()
@@ -51,7 +52,7 @@ for i in range(3):
                 AN.AddInfo(cmHC, good_HC, total, AvDist)
                 if verb:
                     print("----> Affnet : cmT = %d, cmHC = %d(%3.2f), HC = %d, Total = %d, ET_KP = %3.3f, ET_M = %3.3f" %(len(cmT), len(cmHC), AvDist, len(good_HC), len(total), ET_KP,ET_M))
-    print('Resume on',ds[i].name)
-    print('---->     HessAffnet : ',AN.GetScore())
+    print(('Resume on',ds[i].name))
+    print(('---->     HessAffnet : ',AN.GetScore()))
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/python2 -utt
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import numpy as np
@@ -29,20 +30,20 @@ try:
     output_fname = sys.argv[2]
     nfeats = int(sys.argv[3])
 except:
-    print "Wrong input format. Try python hesaffnet.py imgs/cat.png cat.txt 2000"
+    print("Wrong input format. Try python hesaffnet.py imgs/cat.png cat.txt 2000")
     sys.exit(1)
 
 def get_geometry_and_descriptors(img, det, desc):
     with torch.no_grad():
         tt = time()
         LAFs, resp = det(img)
-        print('det time = ', time() - tt)
+        print(('det time = ', time() - tt))
         tt = time()
         patches = det.extract_patches_from_pyr(LAFs, PS = 32)
-        print('extract time = ', time() - tt)
+        print(('extract time = ', time() - tt))
         tt = time()
         descriptors = desc(patches)
-        print('desc time = ', time() - tt)
+        print(('desc time = ', time() - tt))
     return LAFs, descriptors
 def load_grayscale_var(fname):
     img = Image.open(fname).convert('RGB')
@@ -74,8 +75,8 @@ with torch.no_grad():
     LAFs, descriptors = get_geometry_and_descriptors(img, HA, descriptor)
     lt = time()
     ells = LAFs2ellT(LAFs.cpu()).cpu().numpy()
-    print ('LAFs2ell time', time() - lt)
-print ('Total time', time() - t)
+    print(('LAFs2ell time', time() - lt))
+print(('Total time', time() - t))
 np.savetxt(output_fname, ells, delimiter=' ', fmt='%10.10f')
 line_prepender(output_fname, str(len(ells)))
 line_prepender(output_fname, '1.0')

@@ -1,5 +1,6 @@
 #!/usr/bin/python2 -utt
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import numpy as np
@@ -22,6 +23,8 @@ from LAF import denormalizeLAFs, LAFs2ell, abc2A
 from Utils import line_prepender
 from architectures import AffNetFast
 USE_CUDA = False
+USE_GPU = False
+
 th = 28.41 # default threshold for HessianAffine 
 th = -1
 try:
@@ -29,7 +32,7 @@ try:
     output_fname = sys.argv[2]
     nfeats = int(sys.argv[3])
 except:
-    print "Wrong input format. Try python hesaffnet.py imgs/cat.png cat.txt 2000"
+    print("Wrong input format. Try python hesaffnet.py imgs/cat.png cat.txt 2000")
     sys.exit(1)
 
 img = Image.open(input_img_fname).convert('RGB')
@@ -42,12 +45,16 @@ var_image_reshape = var_image.view(1, 1, var_image.size(0),var_image.size(1))
 AffNetPix = AffNetFast(PS = 32)
 weightd_fname = '../../pretrained/AffNet.pth'
 
-checkpoint = torch.load(weightd_fname)
+if USE_GPU:
+    checkpoint = torch.load(weightd_fname)
+else:
+    checkpoint = torch.load(weightd_fname, map_location='cpu')
+        
 AffNetPix.load_state_dict(checkpoint['state_dict'])
 
 AffNetPix.eval()
     
-HA = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = nfeats, border = 5, num_Baum_iters = 1, threshold = th,  AffNet = AffNetPix)
+HA = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = nfeats, border = 5, num_Baum_iters = 1, th = th,  AffNet = AffNetPix)
 if USE_CUDA:
     HA = HA.cuda()
     var_image_reshape = var_image_reshape.cuda()

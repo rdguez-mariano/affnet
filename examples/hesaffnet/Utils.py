@@ -38,7 +38,7 @@ def batched_forward(model, data, batch_size, **kwargs):
     if n_patches > batch_size:
         bs = batch_size
         n_batches = n_patches / bs + 1
-        for batch_idx in range(n_batches):
+        for batch_idx in range(int(n_batches)):
             st = batch_idx * bs
             if batch_idx == n_batches - 1:
                 if (batch_idx + 1) * bs > n_patches:

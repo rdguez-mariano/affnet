@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Training settings
 import os
 import errno
@@ -86,7 +87,7 @@ def read_image_dir(dir_name, ext, patch_w, patch_h, good_fnames):
         #else:
         patches.append(torch_patches)
         idxs = idxs + p_idxs_list
-        print (f, len(idxs))
+        print((f, len(idxs)))
     print( 'torch.cat')
     patches = torch.cat(patches, dim = 0)
     print ('done')
@@ -247,7 +248,7 @@ class TotalDatasetsLoader(data.Dataset):
                 try:
                     y = indices[c1]
                 except:
-                    print indices.keys()
+                    print(indices.keys())
                     sys.exit(0)
                 if len(indices[c1]) == 2:  # hack to speed up process
                     n1, n2 = 0, 1
